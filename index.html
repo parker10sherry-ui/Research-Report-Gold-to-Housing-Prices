@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ounces of Gold to Buy the Average U.S. Home | 1963–2026</title>
+<meta name="description" content="Interactive chart showing how many ounces of gold it takes to purchase the median U.S. home, from 1963 to present. Tracks gold bull run cycles and housing affordability in gold terms.">
+<meta property="og:title" content="Ounces of Gold to Buy the Average U.S. Home">
+<meta property="og:description" content="At ~80 ounces today, gold's purchasing power vs housing has surpassed the 1980 extreme. Interactive historical chart from 1963–2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #d4af37;
+    --gold-dim: rgba(212,175,55,0.15);
+    --gold-faint: rgba(212,175,55,0.06);
+    --bg: #0f0c08;
+    --bg2: #1a1610;
+    --text: #e8dcc8;
+    --text-dim: #8b8578;
+    --text-mid: #c4b8a4;
+    --purple: #8b5cf6;
+    --red: #ef4444;
+    --green: #22c55e;
+    --amber: #f59e0b;
+  }
+
+  body {
+    background: linear-gradient(170deg, var(--bg) 0%, var(--bg2) 40%, #12100c 100%);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23d4af37' fill-opacity='0.012'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px 48px;
+  }
+
+  /* Header */
+  .badge {
+    display: inline-block;
+    padding: 5px 18px;
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 16px;
+  }
+
+  header { text-align: center; margin-bottom: 40px; }
+
+  h1 {
+    font-size: clamp(28px, 4.5vw, 48px);
+    font-weight: 400;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    margin: 0 0 14px;
+    text-shadow: 0 2px 24px rgba(212,175,55,0.12);
+  }
+
+  header p {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: rgba(212,175,55,0.035);
+    border: 1px solid rgba(212,175,55,0.1);
+    border-radius: 10px;
+    padding: 16px 14px;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+  .stat-card:hover { border-color: rgba(212,175,55,0.3); }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-size: 30px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.1;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: #6b6560;
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Toggle Buttons */
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .toggle-btn {
+    background: transparent;
+    border: 1px solid rgba(212,175,55,0.15);
+    color: var(--text-dim);
+    padding: 8px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+    transition: all 0.25s;
+  }
+  .toggle-btn:hover { border-color: rgba(212,175,55,0.4); color: var(--gold); }
+  .toggle-btn.active {
+    background: rgba(212,175,55,0.12);
+    border-color: rgba(212,175,55,0.5);
+    color: var(--gold);
+  }
+
+  /* Chart Container */
+  .chart-wrap {
+    background: rgba(212,175,55,0.02);
+    border: 1px solid rgba(212,175,55,0.1);
+    border-radius: 12px;
+    padding: 20px 16px 14px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .chart-inner {
+    position: relative;
+    width: 100%;
+    height: 460px;
+  }
+
+  @media (max-width: 640px) {
+    .chart-inner { height: 320px; }
+  }
+
+  .chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 14px 0 4px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+
+  .legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Analysis Section */
+  .panel {
+    background: rgba(212,175,55,0.03);
+    border: 1px solid rgba(212,175,55,0.1);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .panel-highlight {
+    background: linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(139,92,246,0.05) 100%);
+    border-color: rgba(212,175,55,0.18);
+  }
+
+  h2 {
+    font-size: 22px;
+    color: var(--gold);
+    font-weight: 400;
+    margin: 0 0 20px;
+    letter-spacing: 0.3px;
+  }
+
+  .cycles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 22px;
+  }
+
+  .cycle-card { padding-left: 16px; }
+  .cycle-card.c1 { border-left: 3px solid var(--red); }
+  .cycle-card.c2 { border-left: 3px solid var(--green); }
+  .cycle-card.c3 { border-left: 3px solid var(--amber); }
+  .cycle-card.c4 { border-left: 3px solid var(--purple); }
+
+  .cycle-title { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .cycle-range {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .cycle-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-mid);
+    margin: 0;
+  }
+
+  /* Insight text */
+  .insight p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-mid);
+    margin: 0 0 14px;
+  }
+  .insight p:last-child { margin-bottom: 0; }
+  .insight strong.g { color: var(--gold); }
+  .insight strong.p { color: var(--purple); }
+  .insight strong.a { color: var(--amber); }
+
+  /* Data Table */
+  .table-wrap { overflow-x: auto; }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .data-table th {
+    text-align: right;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .data-table th:first-child { text-align: left; }
+
+  .data-table td {
+    padding: 5px 12px;
+    text-align: right;
+    color: var(--text-mid);
+  }
+  .data-table td:first-child { text-align: left; color: var(--text); }
+  .data-table td:nth-child(3) { color: var(--gold); }
+  .data-table td:nth-child(4) { font-weight: 600; color: var(--text); }
+
+  .data-table tr:nth-child(even) td { background: rgba(212,175,55,0.02); }
+
+  .zone-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .zone-dear { background: rgba(34,197,94,0.08); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .zone-neutral { background: rgba(245,158,11,0.08); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+  .zone-cheap { background: rgba(239,68,68,0.08); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(212,175,55,0.08);
+    font-size: 11px;
+    color: #6b6560;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.8;
+  }
+
+  .table-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin: 0 0 12px;
+    letter-spacing: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="badge">Macro Research</div>
+    <h1>Ounces of Gold to Buy<br>the Average U.S. Home</h1>
+    <p>Historical ratio of median new home price to gold price per troy ounce, 1963–present. Lower readings indicate gold's purchasing power is approaching or exceeding housing values.</p>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Current</div>
+      <div class="stat-value" style="color:var(--purple);" id="stat-current">—</div>
+      <div class="stat-sub">Gold: $5,228/oz</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Historical Avg</div>
+      <div class="stat-value" style="color:var(--gold);" id="stat-avg">—</div>
+      <div class="stat-sub">1963–2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Peak (Cheap Gold)</div>
+      <div class="stat-value" style="color:var(--red);" id="stat-peak">—</div>
+      <div class="stat-sub">2001: Gold at $277</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Trough (Dear Gold)</div>
+      <div class="stat-value" style="color:var(--green);" id="stat-trough">—</div>
+      <div class="stat-sub">Now: Gold at $5,228</div>
+    </div>
+  </div>
+
+  <!-- Toggle -->
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="btn-ratio" onclick="setView('ratio')">Gold:Housing Ratio</button>
+    <button class="toggle-btn" id="btn-prices" onclick="setView('prices')">Nominal Prices</button>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-wrap">
+    <div class="chart-inner">
+      <canvas id="mainChart"></canvas>
+    </div>
+    <div class="chart-legend" id="chartLegend">
+      <span><span class="legend-dot" style="background:var(--gold);"></span>Gold:Housing Ratio (Ounces)</span>
+      <span><span class="legend-dot" style="background:rgba(212,175,55,0.3);"></span>Historical Average</span>
+    </div>
+  </div>
+
+  <!-- Cycle Analysis -->
+  <div class="panel">
+    <h2>Historical Gold Bull Run Cycle Analysis</h2>
+    <div class="cycles-grid">
+      <div class="cycle-card c1">
+        <div class="cycle-title" style="color:var(--red);">1971–1980 Bull Run</div>
+        <div class="cycle-range">511 oz (1971) → 109 oz (1980)</div>
+        <p class="cycle-desc">Gold went from $35 to $595/oz while homes rose from $25k to $65k. The ratio collapsed 79%, meaning gold massively outperformed housing. At the peak, you could nearly buy a house with just 109 ounces.</p>
+      </div>
+      <div class="cycle-card c2">
+        <div class="cycle-title" style="color:var(--green);">1980–2001 Bear Market</div>
+        <div class="cycle-range">109 oz (1980) → 633 oz (2001)</div>
+        <p class="cycle-desc">Gold fell from $595 to $277 while homes rose from $65k to $175k. The ratio expanded 480%. Housing crushed gold for two decades. The 2001 peak was the worst reading in the entire series.</p>
+      </div>
+      <div class="cycle-card c3">
+        <div class="cycle-title" style="color:var(--amber);">2001–2011 Bull Run</div>
+        <div class="cycle-range">633 oz (2001) → 148 oz (2011)</div>
+        <p class="cycle-desc">Gold surged from $277 to $1,531 while homes went from $175k to $227k. The ratio fell 77%, nearly matching the 1970s compression. Gold again approached housing parity on an ounce basis.</p>
+      </div>
+      <div class="cycle-card c4">
+        <div class="cycle-title" style="color:var(--purple);">2011–2026 Current Cycle</div>
+        <div class="cycle-range">148 oz (2011) → ~80 oz (Now)</div>
+        <p class="cycle-desc">After expanding back to 280 oz (2015), gold's current parabolic run to $5,228 has compressed the ratio to ~80 oz. This is BELOW the 1980 trough of 109 oz, reaching territory not seen in the modern era.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insight -->
+  <div class="panel panel-highlight">
+    <h2>The Pattern: Gold Bull Runs & Housing Affordability in Gold Terms</h2>
+    <div class="insight">
+      <p><strong class="g">There is a clear cyclical pattern.</strong> During secular gold bull markets, the number of ounces required to purchase the median U.S. home compresses dramatically, typically falling 75–80% from peak to trough. In the 1970s, the ratio fell from ~510 oz to 109 oz. In the 2000s, it fell from ~633 oz to 148 oz.</p>
+      <p><strong class="p">The current cycle has now surpassed the 1980 extreme.</strong> At approximately 80 ounces today, gold's purchasing power relative to housing has reached levels never recorded in the post‑Bretton Woods era. Historically, these extremes have marked significant turning points: gold corrects, housing catches up, or both.</p>
+      <p><strong class="a">The reversal pattern is also consistent:</strong> After each gold bull run peak, the ratio expands for 15–20 years as gold mean‑reverts and housing appreciates. The 1980 trough took until 2001 to fully reverse. The question now is whether ~80 oz represents the cycle bottom, or if gold has further to run before exhaustion.</p>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="panel">
+    <h3 class="table-label">Full Data Table</h3>
+    <div class="table-wrap">
+      <table class="data-table" id="dataTable">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Median Home</th>
+            <th>Gold/oz</th>
+            <th>Ounces Needed</th>
+            <th>Zone</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    Sources: U.S. Census Bureau (New Residential Sales), FRED, OnlyGold.com, USAGOLD<br>
+    Gold prices: Annual closing prices. Home prices: Median new home sale price (annual average).<br>
+    2026 uses current spot gold ($5,228/oz) and estimated home price.
+  </footer>
+
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────
+const DATA = [
+  {y:1963,h:18000,g:35.25},{y:1964,h:19000,g:35.35},{y:1965,h:20000,g:35.50},
+  {y:1966,h:21500,g:35.40},{y:1967,h:22500,g:35.50},{y:1968,h:25000,g:43.50},
+  {y:1969,h:25500,g:41.00},{y:1970,h:23400,g:38.90},{y:1971,h:25200,g:44.60},
+  {y:1972,h:27500,g:63.84},{y:1973,h:32700,g:106.48},{y:1974,h:36000,g:183.77},
+  {y:1975,h:39300,g:139.29},{y:1976,h:44200,g:133.77},{y:1977,h:48800,g:161.10},
+  {y:1978,h:55700,g:208.10},{y:1979,h:62900,g:459.00},{y:1980,h:64600,g:594.90},
+  {y:1981,h:68900,g:400.00},{y:1982,h:69300,g:447.00},{y:1983,h:75300,g:380.00},
+  {y:1984,h:79900,g:308.00},{y:1985,h:84300,g:327.00},{y:1986,h:92000,g:390.90},
+  {y:1987,h:104500,g:486.50},{y:1988,h:112500,g:410.15},{y:1989,h:120000,g:401.00},
+  {y:1990,h:122900,g:386.20},{y:1991,h:120000,g:353.15},{y:1992,h:121500,g:333.00},
+  {y:1993,h:126500,g:391.75},{y:1994,h:130000,g:383.25},{y:1995,h:133300,g:387.00},
+  {y:1996,h:140000,g:369.00},{y:1997,h:146000,g:287.05},{y:1998,h:152500,g:288.70},
+  {y:1999,h:161000,g:290.25},{y:2000,h:169000,g:272.65},{y:2001,h:175000,g:276.50},
+  {y:2002,h:188000,g:342.75},{y:2003,h:195000,g:417.25},{y:2004,h:221000,g:435.60},
+  {y:2005,h:240000,g:513.00},{y:2006,h:247000,g:635.70},{y:2007,h:247000,g:836.50},
+  {y:2008,h:232000,g:869.75},{y:2009,h:216000,g:1087.50},{y:2010,h:222000,g:1420.25},
+  {y:2011,h:227000,g:1531.00},{y:2012,h:246000,g:1664.00},{y:2013,h:268000,g:1204.50},
+  {y:2014,h:282000,g:1199.25},{y:2015,h:297000,g:1060.00},{y:2016,h:307000,g:1251.00},
+  {y:2017,h:323000,g:1257.00},{y:2018,h:327000,g:1269.00},{y:2019,h:321000,g:1393.00},
+  {y:2020,h:336000,g:1770.00},{y:2021,h:397000,g:1799.00},{y:2022,h:458000,g:1800.00},
+  {y:2023,h:431000,g:1943.00},{y:2024,h:420000,g:2386.00},{y:2025,h:414000,g:4200.00},
+  {y:2026,h:420000,g:5228.00}
+];
+
+DATA.forEach(d => d.r = Math.round((d.h / d.g) * 10) / 10);
+
+const ratios = DATA.map(d => d.r);
+const avg = Math.round(ratios.reduce((a,b) => a+b, 0) / ratios.length * 10) / 10;
+const peak = Math.max(...ratios);
+const trough = Math.min(...ratios);
+const current = DATA[DATA.length - 1].r;
+
+document.getElementById('stat-current').textContent = Math.round(current) + ' oz';
+document.getElementById('stat-avg').textContent = Math.round(avg) + ' oz';
+document.getElementById('stat-peak').textContent = Math.round(peak) + ' oz';
+document.getElementById('stat-trough').textContent = Math.round(trough) + ' oz';
+
+// ─── TABLE ──────────────────────────────────────────────────────
+const tbody = document.querySelector('#dataTable tbody');
+DATA.forEach((d, i) => {
+  const zone = d.r <= 150 ? ['GOLD DEAR','zone-dear']
+    : d.r <= 300 ? ['NEUTRAL','zone-neutral'] : ['GOLD CHEAP','zone-cheap'];
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${d.y}</td>
+    <td>$${d.h.toLocaleString()}</td>
+    <td>$${d.g.toLocaleString()}</td>
+    <td>${d.r.toFixed(1)}</td>
+    <td><span class="zone-badge ${zone[1]}">${zone[0]}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ─── CHART ──────────────────────────────────────────────────────
+const ctx = document.getElementById('mainChart').getContext('2d');
+let currentChart = null;
+let currentView = 'ratio';
+
+// Key event years for special point styling
+const keyYears = [1971, 1980, 2001, 2011, 2026];
+
+function buildRatioChart() {
+  const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
+  gradient.addColorStop(0, 'rgba(212,175,55,0.25)');
+  gradient.addColorStop(0.5, 'rgba(212,175,55,0.06)');
+  gradient.addColorStop(1, 'rgba(212,175,55,0.01)');
+
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: DATA.map(d => d.y),
+      datasets: [
+        {
+          label: 'Ounces of Gold',
+          data: DATA.map(d => d.r),
+          borderColor: '#d4af37',
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.25,
+          pointRadius: DATA.map(d => keyYears.includes(d.y) ? 6 : 0),
+          pointBackgroundColor: DATA.map(d => {
+            if (d.y === 1971) return '#f59e0b';
+            if (d.y === 1980) return '#ef4444';
+            if (d.y === 2001) return '#22c55e';
+            if (d.y === 2011) return '#ef4444';
+            if (d.y === 2026) return '#8b5cf6';
+            return '#d4af37';
+          }),
+          pointBorderColor: '#0f0c08',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: '#d4af37',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15,12,8,0.95)',
+          borderColor: 'rgba(212,175,55,0.4)',
+          borderWidth: 1,
+          titleFont: { family: "'JetBrains Mono', monospace", size: 14, weight: 'bold' },
+          titleColor: '#d4af37',
+          bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+          bodyColor: '#e8dcc8',
+          padding: 14,
+          cornerRadius: 8,
+          displayColors: false,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (item) => {
+              const d = DATA[item.dataIndex];
+              return [
+                `Median Home:  $${d.h.toLocaleString()}`,
+                `Gold/oz:      $${d.g.toLocaleString()}`,
+                `─────────────────`,
+                `Ounces Needed: ${d.r.toFixed(1)} oz`
+              ];
+            }
+          }
+        },
+        annotation: undefined
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#8b8578',
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            maxTicksLimit: 14
+          },
+          grid: { color: 'rgba(212,175,55,0.04)' },
+          border: { color: 'rgba(212,175,55,0.12)' }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Ounces of Gold',
+            color: '#8b8578',
+            font: { family: "'JetBrains Mono', monospace", size: 11 }
+          },
+          ticks: {
+            color: '#8b8578',
+            font: { family: "'JetBrains Mono', monospace", size: 11 }
+          },
+          grid: { color: 'rgba(212,175,55,0.04)' },
+          border: { color: 'rgba(212,175,55,0.12)' }
+        }
+      }
+    },
+    plugins: [{
+      id: 'avgLine',
+      afterDraw(chart) {
+        const yScale = chart.scales.y;
+        const xScale = chart.scales.x;
+        const yPixel = yScale.getPixelForValue(avg);
+        const ctxDraw = chart.ctx;
+
+        ctxDraw.save();
+        ctxDraw.setLineDash([10, 5]);
+        ctxDraw.strokeStyle = 'rgba(212,175,55,0.4)';
+        ctxDraw.lineWidth = 1;
+        ctxDraw.beginPath();
+        ctxDraw.moveTo(xScale.left, yPixel);
+        ctxDraw.lineTo(xScale.right, yPixel);
+        ctxDraw.stroke();
+        ctxDraw.setLineDash([]);
+
+        ctxDraw.fillStyle = 'rgba(212,175,55,0.7)';
+        ctxDraw.font = "11px 'JetBrains Mono', monospace";
+        ctxDraw.textAlign = 'right';
+        ctxDraw.fillText(`Avg: ${Math.round(avg)} oz`, xScale.right - 4, yPixel - 6);
+        ctxDraw.restore();
+      }
+    }]
+  });
+}
+
+function buildPricesChart() {
+  const goldGrad = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
+  goldGrad.addColorStop(0, 'rgba(212,175,55,0.15)');
+  goldGrad.addColorStop(1, 'rgba(212,175,55,0.01)');
+
+  const homeGrad = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
+  homeGrad.addColorStop(0, 'rgba(139,92,246,0.15)');
+  homeGrad.addColorStop(1, 'rgba(139,92,246,0.01)');
+
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: DATA.map(d => d.y),
+      datasets: [
+        {
+          label: 'Median Home Price',
+          data: DATA.map(d => d.h),
+          borderColor: '#8b5cf6',
+          backgroundColor: homeGrad,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.25,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#8b5cf6',
+        },
+        {
+          label: 'Gold Price/oz',
+          data: DATA.map(d => d.g),
+          borderColor: '#d4af37',
+          backgroundColor: goldGrad,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.25,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#d4af37',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15,12,8,0.95)',
+          borderColor: 'rgba(212,175,55,0.4)',
+          borderWidth: 1,
+          titleFont: { family: "'JetBrains Mono', monospace", size: 14, weight: 'bold' },
+          titleColor: '#d4af37',
+          bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+          bodyColor: '#e8dcc8',
+          padding: 14,
+          cornerRadius: 8,
+          displayColors: false,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (item) => {
+              const d = DATA[item.dataIndex];
+              if (item.datasetIndex === 0) return `Median Home: $${d.h.toLocaleString()}`;
+              return `Gold/oz:     $${d.g.toLocaleString()}`;
+            },
+            afterBody: (items) => {
+              const d = DATA[items[0].dataIndex];
+              return [`─────────────────`, `Ratio: ${d.r.toFixed(1)} oz`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#8b8578',
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            maxTicksLimit: 14
+          },
+          grid: { color: 'rgba(212,175,55,0.04)' },
+          border: { color: 'rgba(212,175,55,0.12)' }
+        },
+        y: {
+          ticks: {
+            color: '#8b8578',
+            font: { family: "'JetBrains Mono', monospace", size: 11 },
+            callback: v => v >= 1000 ? '$' + (v/1000).toFixed(0) + 'k' : '$' + v
+          },
+          grid: { color: 'rgba(212,175,55,0.04)' },
+          border: { color: 'rgba(212,175,55,0.12)' }
+        }
+      }
+    }
+  });
+}
+
+function setView(view) {
+  currentView = view;
+  document.getElementById('btn-ratio').classList.toggle('active', view === 'ratio');
+  document.getElementById('btn-prices').classList.toggle('active', view === 'prices');
+
+  if (currentChart) currentChart.destroy();
+
+  const legend = document.getElementById('chartLegend');
+  if (view === 'ratio') {
+    currentChart = buildRatioChart();
+    legend.innerHTML = `
+      <span><span class="legend-dot" style="background:var(--gold);"></span>Gold:Housing Ratio (Ounces)</span>
+      <span><span class="legend-dot" style="background:rgba(212,175,55,0.3);border:1px dashed rgba(212,175,55,0.5);"></span>Historical Average</span>
+    `;
+  } else {
+    currentChart = buildPricesChart();
+    legend.innerHTML = `
+      <span><span class="legend-dot" style="background:var(--gold);"></span>Gold Price/oz</span>
+      <span><span class="legend-dot" style="background:var(--purple);"></span>Median New Home Price</span>
+    `;
+  }
+}
+
+// Init
+setView('ratio');
+
+// Resize handling
+window.addEventListener('resize', () => {
+  if (currentChart) {
+    currentChart.destroy();
+    if (currentView === 'ratio') currentChart = buildRatioChart();
+    else currentChart = buildPricesChart();
+  }
+});
+</script>
+
+</body>
+</html>
