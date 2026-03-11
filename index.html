@@ -529,6 +529,7 @@
       <button class="toggle-btn active-silver" id="tog-silver" onclick="toggleAsset('silver')">◆ Silver</button>
       <button class="toggle-btn active-housing" id="tog-housing" onclick="toggleAsset('housing')">◆ Housing</button>
       <button class="toggle-btn active-recession" id="tog-recession" onclick="toggleAsset('recession')">▮ Recessions</button>
+      <button class="toggle-btn active-gold" id="tog-log" onclick="toggleLog()" style="margin-left:12px;">⌥ Log Scale</button>
     </div>
   </div>
 
@@ -807,7 +808,14 @@ DATA.forEach(d => {
 const ctx = document.getElementById('mainChart').getContext('2d');
 let currentChart = null;
 let chartView = 'prices';
-let showGold = true, showSilver = true, showHousing = true, showRecession = true;
+let showGold = true, showSilver = true, showHousing = true, showRecession = true, useLogScale = true;
+
+function toggleLog() {
+  useLogScale = !useLogScale;
+  document.getElementById('tog-log').classList.toggle('active-gold', useLogScale);
+  document.getElementById('tog-log').textContent = useLogScale ? '⌥ Log Scale' : '⌥ Linear Scale';
+  rebuildChart();
+}
 
 function toggleAsset(asset) {
   if (asset === 'gold') { showGold = !showGold; document.getElementById('tog-gold').classList.toggle('active-gold', showGold); }
@@ -872,9 +880,12 @@ function getTooltipCallbacks() {
 function buildPricesChart() {
   const datasets = [];
 
+  // Use logarithmic scale so gold ($35→$5,158) and silver ($1→$88) are visible
+  // alongside housing ($18k→$420k). Log scale equalizes percentage moves.
+
   if (showGold) {
     const goldGrad = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
-    goldGrad.addColorStop(0, 'rgba(212,175,55,0.18)');
+    goldGrad.addColorStop(0, 'rgba(212,175,55,0.22)');
     goldGrad.addColorStop(1, 'rgba(212,175,55,0.01)');
     datasets.push({
       label: 'Gold $/oz',
@@ -885,7 +896,7 @@ function buildPricesChart() {
       fill: true,
       tension: 0.25,
       pointRadius: 0,
-      pointHoverRadius: 5,
+      pointHoverRadius: 6,
       pointHoverBackgroundColor: '#d4af37',
       yAxisID: 'y'
     });
@@ -893,7 +904,7 @@ function buildPricesChart() {
 
   if (showSilver) {
     const silverGrad = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
-    silverGrad.addColorStop(0, 'rgba(192,192,192,0.15)');
+    silverGrad.addColorStop(0, 'rgba(192,192,192,0.18)');
     silverGrad.addColorStop(1, 'rgba(192,192,192,0.01)');
     datasets.push({
       label: 'Silver $/oz',
@@ -904,15 +915,15 @@ function buildPricesChart() {
       fill: true,
       tension: 0.25,
       pointRadius: 0,
-      pointHoverRadius: 5,
+      pointHoverRadius: 6,
       pointHoverBackgroundColor: '#c0c0c0',
-      yAxisID: showHousing || showGold ? 'y2' : 'y'
+      yAxisID: 'y'
     });
   }
 
   if (showHousing) {
     const homeGrad = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
-    homeGrad.addColorStop(0, 'rgba(139,92,246,0.15)');
+    homeGrad.addColorStop(0, 'rgba(139,92,246,0.18)');
     homeGrad.addColorStop(1, 'rgba(139,92,246,0.01)');
     datasets.push({
       label: 'Median Home Price',
@@ -923,10 +934,18 @@ function buildPricesChart() {
       fill: true,
       tension: 0.25,
       pointRadius: 0,
-      pointHoverRadius: 5,
+      pointHoverRadius: 6,
       pointHoverBackgroundColor: '#8b5cf6',
       yAxisID: 'y'
     });
+  }
+
+  // Format log scale tick labels
+  function formatLogTick(v) {
+    if (v >= 100000) return '$' + (v / 1000).toFixed(0) + 'k';
+    if (v >= 1000) return '$' + (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + 'k';
+    if (v >= 1) return '$' + v.toLocaleString();
+    return '$' + v.toFixed(2);
   }
 
   const scales = {
@@ -936,23 +955,25 @@ function buildPricesChart() {
       border: { color: 'rgba(212,175,55,0.12)' }
     },
     y: {
+      type: useLogScale ? 'logarithmic' : 'linear',
       position: 'left',
-      title: { display: true, text: showHousing ? 'Gold / Housing ($)' : 'Gold ($)', color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 } },
-      ticks: { color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 }, callback: v => v >= 1000 ? '$' + (v/1000).toFixed(0) + 'k' : '$' + v },
+      title: { display: true, text: useLogScale ? 'Price (Log Scale — USD)' : 'Price (USD)', color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 } },
+      ticks: {
+        color: '#8b8578',
+        font: { family: "'JetBrains Mono', monospace", size: 11 },
+        callback: function(value) {
+          if (useLogScale) {
+            const nice = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
+            if (nice.includes(value)) return formatLogTick(value);
+            return '';
+          }
+          return formatLogTick(value);
+        }
+      },
       grid: { color: 'rgba(212,175,55,0.04)' },
       border: { color: 'rgba(212,175,55,0.12)' }
     }
   };
-
-  if (showSilver && (showHousing || showGold)) {
-    scales.y2 = {
-      position: 'right',
-      title: { display: true, text: 'Silver ($)', color: '#c0c0c0', font: { family: "'JetBrains Mono', monospace", size: 11 } },
-      ticks: { color: '#c0c0c0', font: { family: "'JetBrains Mono', monospace", size: 11 }, callback: v => '$' + v },
-      grid: { display: false },
-      border: { color: 'rgba(192,192,192,0.12)' }
-    };
-  }
 
   return new Chart(ctx, {
     type: 'line',
@@ -1095,6 +1116,7 @@ function updateLegend() {
     if (showGold) html += '<span><span class="legend-dot" style="background:var(--gold);"></span>Gold $/oz</span>';
     if (showSilver) html += '<span><span class="legend-dot" style="background:var(--silver);"></span>Silver $/oz</span>';
     if (showHousing) html += '<span><span class="legend-dot" style="background:var(--purple);"></span>Median Home Price</span>';
+    html += '<span style="opacity:0.5;">' + (useLogScale ? '📐 Log scale — equal vertical distance = equal % change' : '📏 Linear scale') + '</span>';
   } else if (chartView === 'gold-ratio') {
     html += '<span><span class="legend-dot" style="background:var(--gold);"></span>Ounces of Gold per Home</span>';
     html += '<span><span class="legend-dot" style="background:rgba(212,175,55,0.3);border:1px dashed rgba(212,175,55,0.5);"></span>Historical Average</span>';
