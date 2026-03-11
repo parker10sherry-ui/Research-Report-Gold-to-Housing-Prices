@@ -677,40 +677,69 @@
 
 <script>
 // ─── DATA ───────────────────────────────────────────────────────
-// Silver prices: annual averages from LBMA/Kitco historical data
+// Annual data 1963–2023 (LBMA/World Bank/FRED), then MONTHLY from Jan 2024
+// Monthly gold & silver: month-end closing prices. Housing: Census MSPNHSUS monthly.
 const DATA = [
-  {y:1963,h:17967,g:35.34,s:1.28},{y:1964,h:18983,g:35.30,s:1.29},
-  {y:1965,h:20150,g:35.38,s:1.29},{y:1966,h:21525,g:35.40,s:1.29},
-  {y:1967,h:22692,g:35.39,s:1.55},{y:1968,h:24833,g:39.68,s:2.14},
-  {y:1969,h:25575,g:39.35,s:1.79},{y:1970,h:23533,g:37.40,s:1.77},
-  {y:1971,h:25217,g:40.95,s:1.55},{y:1972,h:27550,g:57.30,s:1.68},
-  {y:1973,h:32708,g:95.25,s:2.56},{y:1974,h:36017,g:156.15,s:4.71},
-  {y:1975,h:39242,g:168.80,s:4.42},{y:1976,h:44283,g:130.25,s:4.36},
-  {y:1977,h:48983,g:158.60,s:4.64},{y:1978,h:55792,g:221.55,s:5.42},
-  {y:1979,h:62750,g:406.25,s:11.10},{y:1980,h:64708,g:672.60,s:20.80},
-  {y:1981,h:68825,g:531.30,s:10.52},{y:1982,h:69300,g:420.75,s:7.93},
-  {y:1983,h:75458,g:472.05,s:11.43},{y:1984,h:80017,g:382.20,s:8.14},
-  {y:1985,h:84275,g:332.85,s:6.12},{y:1986,h:92233,g:411.80,s:5.44},
-  {y:1987,h:104675,g:475.55,s:7.01},{y:1988,h:113350,g:472.05,s:6.53},
-  {y:1989,h:120383,g:415.75,s:5.51},{y:1990,h:122275,g:411.35,s:4.83},
-  {y:1991,h:120017,g:400.90,s:4.05},{y:1992,h:121300,g:368.85,s:3.95},
-  {y:1993,h:126142,g:392.50,s:4.31},{y:1994,h:130408,g:411.10,s:5.28},
-  {y:1995,h:133433,g:404.05,s:5.20},{y:1996,h:139767,g:384.55,s:5.20},
-  {y:1997,h:145050,g:323.85,s:4.91},{y:1998,h:151975,g:293.95,s:5.55},
-  {y:1999,h:159842,g:289.15,s:5.22},{y:2000,h:166542,g:290.23,s:4.95},
-  {y:2001,h:172608,g:275.05,s:4.38},{y:2002,h:185025,g:313.73,s:4.60},
-  {y:2003,h:191383,g:369.38,s:4.88},{y:2004,h:217817,g:414.63,s:6.66},
-  {y:2005,h:234208,g:475.65,s:7.31},{y:2006,h:243067,g:603.46,s:11.56},
-  {y:2007,h:243742,g:695.39,s:13.39},{y:2008,h:230408,g:871.96,s:15.00},
-  {y:2009,h:214500,g:972.35,s:14.64},{y:2010,h:221242,g:1224.53,s:20.15},
-  {y:2011,h:224317,g:1571.52,s:35.22},{y:2012,h:242108,g:1668.98,s:31.14},
-  {y:2013,h:265092,g:1411.23,s:23.85},{y:2014,h:283167,g:1266.40,s:19.07},
-  {y:2015,h:293733,g:1160.06,s:15.72},{y:2016,h:306500,g:1250.74,s:17.15},
-  {y:2017,h:321633,g:1257.12,s:17.07},{y:2018,h:323125,g:1268.49,s:15.71},
-  {y:2019,h:319267,g:1393.34,s:16.22},{y:2020,h:326808,g:1773.73,s:20.54},
-  {y:2021,h:381692,g:1798.89,s:25.16},{y:2022,h:430125,g:1801.87,s:21.79},
-  {y:2023,h:425383,g:1943.00,s:23.40},{y:2024,h:419508,g:2386.90,s:28.27},
-  {y:2025,h:412700,g:3333.25,s:39.80},{y:2026,h:420000,g:5228.00,s:89.81}
+  // ── Annual 1963–2023 ──
+  {y:'1963',h:17967,g:35.34,s:1.28},{y:'1964',h:18983,g:35.30,s:1.29},
+  {y:'1965',h:20150,g:35.38,s:1.29},{y:'1966',h:21525,g:35.40,s:1.29},
+  {y:'1967',h:22692,g:35.39,s:1.55},{y:'1968',h:24833,g:39.68,s:2.14},
+  {y:'1969',h:25575,g:39.35,s:1.79},{y:'1970',h:23533,g:37.40,s:1.77},
+  {y:'1971',h:25217,g:40.95,s:1.55},{y:'1972',h:27550,g:57.30,s:1.68},
+  {y:'1973',h:32708,g:95.25,s:2.56},{y:'1974',h:36017,g:156.15,s:4.71},
+  {y:'1975',h:39242,g:168.80,s:4.42},{y:'1976',h:44283,g:130.25,s:4.36},
+  {y:'1977',h:48983,g:158.60,s:4.64},{y:'1978',h:55792,g:221.55,s:5.42},
+  {y:'1979',h:62750,g:406.25,s:11.10},{y:'1980',h:64708,g:672.60,s:20.80},
+  {y:'1981',h:68825,g:531.30,s:10.52},{y:'1982',h:69300,g:420.75,s:7.93},
+  {y:'1983',h:75458,g:472.05,s:11.43},{y:'1984',h:80017,g:382.20,s:8.14},
+  {y:'1985',h:84275,g:332.85,s:6.12},{y:'1986',h:92233,g:411.80,s:5.44},
+  {y:'1987',h:104675,g:475.55,s:7.01},{y:'1988',h:113350,g:472.05,s:6.53},
+  {y:'1989',h:120383,g:415.75,s:5.51},{y:'1990',h:122275,g:411.35,s:4.83},
+  {y:'1991',h:120017,g:400.90,s:4.05},{y:'1992',h:121300,g:368.85,s:3.95},
+  {y:'1993',h:126142,g:392.50,s:4.31},{y:'1994',h:130408,g:411.10,s:5.28},
+  {y:'1995',h:133433,g:404.05,s:5.20},{y:'1996',h:139767,g:384.55,s:5.20},
+  {y:'1997',h:145050,g:323.85,s:4.91},{y:'1998',h:151975,g:293.95,s:5.55},
+  {y:'1999',h:159842,g:289.15,s:5.22},{y:'2000',h:166542,g:290.23,s:4.95},
+  {y:'2001',h:172608,g:275.05,s:4.38},{y:'2002',h:185025,g:313.73,s:4.60},
+  {y:'2003',h:191383,g:369.38,s:4.88},{y:'2004',h:217817,g:414.63,s:6.66},
+  {y:'2005',h:234208,g:475.65,s:7.31},{y:'2006',h:243067,g:603.46,s:11.56},
+  {y:'2007',h:243742,g:695.39,s:13.39},{y:'2008',h:230408,g:871.96,s:15.00},
+  {y:'2009',h:214500,g:972.35,s:14.64},{y:'2010',h:221242,g:1224.53,s:20.15},
+  {y:'2011',h:224317,g:1571.52,s:35.22},{y:'2012',h:242108,g:1668.98,s:31.14},
+  {y:'2013',h:265092,g:1411.23,s:23.85},{y:'2014',h:283167,g:1266.40,s:19.07},
+  {y:'2015',h:293733,g:1160.06,s:15.72},{y:'2016',h:306500,g:1250.74,s:17.15},
+  {y:'2017',h:321633,g:1257.12,s:17.07},{y:'2018',h:323125,g:1268.49,s:15.71},
+  {y:'2019',h:319267,g:1393.34,s:16.22},{y:'2020',h:326808,g:1773.73,s:20.54},
+  {y:'2021',h:381692,g:1798.89,s:25.16},{y:'2022',h:430125,g:1801.87,s:21.79},
+  {y:'2023',h:425383,g:1943.00,s:23.40},
+  // ── Monthly from Jan 2024 ──
+  {y:"Jan '24",h:430400,g:2040.00,s:23.28},
+  {y:"Feb '24",h:420900,g:2044.32,s:22.89},
+  {y:"Mar '24",h:436400,g:2246.08,s:24.88},
+  {y:"Apr '24",h:415300,g:2291.39,s:26.65},
+  {y:"May '24",h:414300,g:2327.26,s:31.68},
+  {y:"Jun '24",h:414000,g:2325.06,s:29.26},
+  {y:"Jul '24",h:429000,g:2445.84,s:29.07},
+  {y:"Aug '24",h:405800,g:2503.12,s:29.83},
+  {y:"Sep '24",h:421100,g:2635.73,s:31.46},
+  {y:"Oct '24",h:426300,g:2746.75,s:32.95},
+  {y:"Nov '24",h:397600,g:2650.50,s:30.46},
+  {y:"Dec '24",h:423000,g:2623.84,s:29.41},
+  {y:"Jan '25",h:429600,g:2796.33,s:32.49},
+  {y:"Feb '25",h:415100,g:2849.79,s:32.11},
+  {y:"Mar '25",h:412900,g:3124.55,s:34.61},
+  {y:"Apr '25",h:413600,g:3292.00,s:32.83},
+  {y:"May '25",h:424800,g:3291.80,s:33.42},
+  {y:"Jun '25",h:409200,g:3302.91,s:36.17},
+  {y:"Jul '25",h:397300,g:3299.41,s:36.71},
+  {y:"Aug '25",h:417900,g:3447.99,s:40.66},
+  {y:"Sep '25",h:416800,g:3869.18,s:46.64},
+  {y:"Oct '25",h:403200,g:3995.65,s:48.16},
+  {y:"Nov '25",h:397600,g:4216.34,s:56.71},
+  {y:"Dec '25",h:414400,g:4315.13,s:70.36},
+  {y:"Jan '26",h:420000,g:4865.37,s:85.17},
+  {y:"Feb '26",h:420000,g:5277.96,s:93.80},
+  {y:"Mar '26",h:420000,g:5157.70,s:88.15}
 ];
 
 // Compute ratios
@@ -727,7 +756,18 @@ const RECESSIONS = [
 ];
 
 function isRecessionYear(year) {
-  return RECESSIONS.some(([s, e]) => year >= s && year <= e);
+  const y = parseInt(year);
+  if (isNaN(y)) return false;
+  return RECESSIONS.some(([s, e]) => y >= s && y <= e);
+}
+
+function getYear(label) {
+  const y = parseInt(label);
+  if (!isNaN(y) && y > 1900) return y;
+  // Parse "Jan '24" → 2024
+  const m = String(label).match(/'(\d{2})$/);
+  if (m) return 2000 + parseInt(m[1]);
+  return null;
 }
 
 // Stats
@@ -735,9 +775,11 @@ const last = DATA[DATA.length - 1];
 document.getElementById('stat-gold-ratio').textContent = Math.round(last.gr) + ' oz';
 document.getElementById('stat-silver-ratio').textContent = Math.round(last.sr).toLocaleString() + ' oz';
 document.getElementById('stat-gs-ratio').textContent = Math.round(last.gsr) + ':1';
-document.getElementById('stat-gold-price').textContent = '$' + last.g.toLocaleString();
+document.getElementById('stat-gold-price').textContent = '$' + last.g.toLocaleString(undefined, {maximumFractionDigits: 0});
 document.getElementById('stat-silver-price').textContent = '$' + last.s.toFixed(2);
 document.getElementById('stat-home-price').textContent = '$' + (last.h / 1000).toFixed(0) + 'k';
+
+// Note: Jan-Mar 2026 home prices are estimates (Census data not yet released)
 
 // Table
 const tbody = document.querySelector('#dataTable tbody');
@@ -745,11 +787,13 @@ DATA.forEach(d => {
   const zone = d.gr <= 150 ? ['GOLD DEAR','zone-dear']
     : d.gr <= 300 ? ['NEUTRAL','zone-neutral'] : ['GOLD CHEAP','zone-cheap'];
   const tr = document.createElement('tr');
-  if (isRecessionYear(d.y)) tr.classList.add('recession-row');
+  const yr = getYear(d.y);
+  const isRec = yr && isRecessionYear(yr);
+  if (isRec) tr.classList.add('recession-row');
   tr.innerHTML = `
-    <td>${d.y}${isRecessionYear(d.y) ? ' ▮' : ''}</td>
+    <td>${d.y}${isRec ? ' ▮' : ''}</td>
     <td>$${d.h.toLocaleString()}</td>
-    <td class="gold-col">$${d.g.toLocaleString()}</td>
+    <td class="gold-col">$${d.g.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
     <td class="silver-col">$${d.s.toFixed(2)}</td>
     <td class="ratio-col">${d.gr.toFixed(1)}</td>
     <td>${Math.round(d.sr).toLocaleString()}</td>
@@ -792,7 +836,8 @@ const recessionPlugin = {
 
     const labels = chart.data.labels;
     labels.forEach((label, i) => {
-      if (isRecessionYear(label)) {
+      const yr = getYear(label);
+      if (yr && isRecessionYear(yr)) {
         const x = xScale.getPixelForValue(i);
         const barWidth = Math.max(xScale.width / labels.length, 6);
         ctxDraw.fillStyle = 'rgba(150, 150, 150, 0.12)';
@@ -808,7 +853,7 @@ function getTooltipCallbacks() {
   return {
     title: (items) => {
       const year = items[0].label;
-      const rec = isRecessionYear(parseInt(year)) ? ' (RECESSION)' : '';
+      const yr = getYear(year); const rec = (yr && isRecessionYear(yr)) ? ' (RECESSION)' : '';
       return year + rec;
     },
     afterBody: (items) => {
@@ -886,7 +931,7 @@ function buildPricesChart() {
 
   const scales = {
     x: {
-      ticks: { color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 14 },
+      ticks: { color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 16, autoSkip: true },
       grid: { color: 'rgba(212,175,55,0.04)' },
       border: { color: 'rgba(212,175,55,0.12)' }
     },
@@ -934,7 +979,8 @@ function buildPricesChart() {
 function buildRatioChart(ratioKey, label, color, avgLabel) {
   const ratios = DATA.map(d => d[ratioKey]);
   const avg = ratios.reduce((a,b) => a+b, 0) / ratios.length;
-  const keyYears = [1971, 1980, 2001, 2011, 2026];
+  const keyLabels = ['1971', '1980', '2001', '2011'];
+  const lastLabel = DATA[DATA.length - 1].y;
 
   const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.clientHeight);
   gradient.addColorStop(0, color.replace('1)', '0.25)'));
@@ -956,12 +1002,12 @@ function buildRatioChart(ratioKey, label, color, avgLabel) {
         borderWidth: 2.5,
         fill: true,
         tension: 0.25,
-        pointRadius: DATA.map(d => keyYears.includes(d.y) ? 6 : 0),
+        pointRadius: DATA.map(d => (keyLabels.includes(d.y) || d.y === lastLabel) ? 6 : 0),
         pointBackgroundColor: DATA.map(d => {
-          if (d.y === 1980 || d.y === 2011) return '#ef4444';
-          if (d.y === 2001) return '#22c55e';
-          if (d.y === 2026) return '#8b5cf6';
-          if (d.y === 1971) return '#f59e0b';
+          if (d.y === '1980' || d.y === '2011') return '#ef4444';
+          if (d.y === '2001') return '#22c55e';
+          if (d.y === lastLabel) return '#8b5cf6';
+          if (d.y === '1971') return '#f59e0b';
           return solidColor;
         }),
         pointBorderColor: '#0f0c08',
@@ -982,7 +1028,7 @@ function buildRatioChart(ratioKey, label, color, avgLabel) {
           callbacks: {
             title: (items) => {
               const year = items[0].label;
-              const rec = isRecessionYear(parseInt(year)) ? ' (RECESSION)' : '';
+              const yr = getYear(year); const rec = (yr && isRecessionYear(yr)) ? ' (RECESSION)' : '';
               return year + rec;
             },
             label: (item) => {
@@ -1002,7 +1048,7 @@ function buildRatioChart(ratioKey, label, color, avgLabel) {
       },
       scales: {
         x: {
-          ticks: { color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 14 },
+          ticks: { color: '#8b8578', font: { family: "'JetBrains Mono', monospace", size: 11 }, maxTicksLimit: 16, autoSkip: true },
           grid: { color: 'rgba(212,175,55,0.04)' },
           border: { color: 'rgba(212,175,55,0.12)' }
         },
